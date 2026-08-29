@@ -1,0 +1,17 @@
+{
+  "name": "3d-ulpin-backend",
+  "version": "1.0.0",
+  "description": "Backend API for 3D ULPIN vertical property mapping prototype (SIH26011)",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "multer": "^2.0.1"
+  }
+}
