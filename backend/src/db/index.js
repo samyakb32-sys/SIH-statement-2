@@ -4,7 +4,8 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, "..", "..", "data");
+// Vercel functions only allow writes under /tmp; local dev keeps the DB in backend/data.
+const dataDir = process.env.VERCEL ? "/tmp/ulpin-data" : path.join(__dirname, "..", "..", "data");
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 const dbPath = path.join(dataDir, "ulpin.db");

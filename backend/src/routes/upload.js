@@ -5,7 +5,8 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.join(__dirname, "..", "..", "uploads");
+// Vercel functions only allow writes under /tmp; local dev keeps uploads in backend/uploads.
+export const uploadsDir = process.env.VERCEL ? "/tmp/ulpin-uploads" : path.join(__dirname, "..", "..", "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 const storage = multer.diskStorage({
