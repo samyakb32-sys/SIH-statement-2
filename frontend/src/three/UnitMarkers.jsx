@@ -10,7 +10,7 @@ export function UnitMarkers({ units, floorsById, highlightedUnitId }) {
         const isHighlighted = unit.id === highlightedUnitId;
 
         return (
-          <mesh key={unit.id} position={[x, floor.minHeight + height / 2, z]}>
+          <mesh key={unit.id} position={[x, floor.minHeight + height / 2, z]} renderOrder={2}>
             <boxGeometry args={[width, height * 0.98, depth]} />
             <meshStandardMaterial
               color={isHighlighted ? "#f59e0b" : unit.unitType === "commercial" ? "#0ea5e9" : "#22c55e"}
