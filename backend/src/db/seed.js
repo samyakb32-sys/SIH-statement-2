@@ -55,20 +55,26 @@ export function seedIfEmpty() {
       insertFloor.run(floorId, buildingId, f, minHeight, maxHeight, `Floor ${f}`);
 
       const unitsOnFloor = f % 2 === 0 ? 2 : 3;
+      // Keep every unit inside the placeholder building's default 10m footprint
+      // (it spans -5..5 on both axes): fixed narrow width/depth, laid out in a
+      // row centered on the building rather than drifting off to one side.
+      const unitWidth = 2.6;
+      const unitDepth = 3.2;
+      const gap = 0.4;
+      const rowWidth = unitsOnFloor * unitWidth + (unitsOnFloor - 1) * gap;
+      const rowStart = -rowWidth / 2;
       for (let u = 1; u <= unitsOnFloor; u++) {
         const ulpinId = generateUnitUlpin(ulpinBase, f, u);
         const owner = OWNER_NAMES[ownerIdx % OWNER_NAMES.length];
         ownerIdx++;
         const unitType = UNIT_TYPES[(f + u) % 2];
         const area = 40 + ((f * 7 + u * 3) % 60);
-        const width = 4 + (u % 3);
-        const depth = 5 + (f % 3);
-        const x = (u - 1) * (width + 0.5);
+        const x = rowStart + (u - 1) * (unitWidth + gap) + unitWidth / 2;
         const coordinates = {
           x,
           z: 0,
-          width,
-          depth,
+          width: unitWidth,
+          depth: unitDepth,
         };
 
         insertUnit.run(

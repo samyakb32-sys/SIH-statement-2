@@ -39,10 +39,13 @@ router.post("/", (req, res) => {
   const building = db.prepare("SELECT * FROM buildings WHERE id = ?").get(floor.buildingId);
   if (!ownerName) return res.status(400).json({ error: "ownerName is required" });
 
-  const countRow = db
-    .prepare("SELECT COUNT(*) as n FROM units WHERE floorId = ?")
+  // MAX(unitNumber), not COUNT(*): if a unit was ever deleted, COUNT would
+  // reissue a lower unitNumber that collides with a surviving unit's
+  // ulpinId (UNIQUE constraint) and the insert below would fail outright.
+  const maxRow = db
+    .prepare("SELECT MAX(unitNumber) as n FROM units WHERE floorId = ?")
     .get(floorId);
-  const unitNumber = countRow.n + 1;
+  const unitNumber = (maxRow.n || 0) + 1;
   const ulpinId = generateUnitUlpin(building.ulpinBase, floor.floorNumber, unitNumber);
 
   const id = newId("unit");

@@ -11,6 +11,7 @@ export default function BuildingDetail() {
   const [selectedFloor, setSelectedFloor] = useState(null);
   const [showTop, setShowTop] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [footprint, setFootprint] = useState(10);
 
   const load = useCallback(async () => {
     const data = await api.getBuilding(id);
@@ -82,6 +83,10 @@ export default function BuildingDetail() {
                 selectedFloorId={selectedFloor?.id}
                 onSelectFloor={setSelectedFloor}
                 fallbackHeight={building.heightMeters}
+                onBounds={(box) => {
+                  const fp = Math.max(box.max.x - box.min.x, box.max.z - box.min.z);
+                  if (fp && Number.isFinite(fp)) setFootprint(fp);
+                }}
               />
             </div>
           ) : (
@@ -90,6 +95,7 @@ export default function BuildingDetail() {
                 floor={selectedFloor}
                 units={unitsOnFloor}
                 onCreated={load}
+                worldSize={footprint}
               />
             )
           )}

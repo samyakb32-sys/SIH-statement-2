@@ -2,19 +2,25 @@ import { useRef, useState } from "react";
 import { api } from "../lib/api.js";
 
 const SVG_SIZE = 480;
-const WORLD_SIZE = 24; // metres represented across the SVG canvas
-const SCALE = SVG_SIZE / WORLD_SIZE;
-
-function toWorld(px) {
-  return (px - SVG_SIZE / 2) / SCALE;
-}
 
 function unitTypeColor(type) {
   return type === "commercial" ? "#0ea5e9" : "#22c55e";
 }
 
-export function UnitDrawPanel({ floor, units, onCreated }) {
+/**
+ * `worldSize` is the building's actual footprint (metres) as measured from
+ * its 3D bounding box — the same value the 3D viewer uses to size the
+ * placeholder/model. The grid here used to be a fixed 24m regardless of the
+ * real building size, so a unit drawn to look reasonable on this 2D grid
+ * could end up rendering outside the building in the 3D view once saved.
+ */
+export function UnitDrawPanel({ floor, units, onCreated, worldSize = 12 }) {
   const svgRef = useRef(null);
+  const scale = SVG_SIZE / worldSize;
+
+  function toWorld(px) {
+    return (px - SVG_SIZE / 2) / scale;
+  }
   const [drawing, setDrawing] = useState(null); // {startX, startY, x, y, width, height}
   const [pendingRect, setPendingRect] = useState(null);
   const [ownerName, setOwnerName] = useState("");
@@ -63,8 +69,8 @@ export function UnitDrawPanel({ floor, units, onCreated }) {
     setSaving(true);
     setError(null);
     try {
-      const worldWidth = pendingRect.width / SCALE;
-      const worldDepth = pendingRect.height / SCALE;
+      const worldWidth = pendingRect.width / scale;
+      const worldDepth = pendingRect.height / scale;
       const worldX = toWorld(pendingRect.x + pendingRect.width / 2);
       const worldZ = toWorld(pendingRect.y + pendingRect.height / 2);
 
@@ -104,24 +110,24 @@ export function UnitDrawPanel({ floor, units, onCreated }) {
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
         >
-          {Array.from({ length: WORLD_SIZE + 1 }).map((_, i) => (
+          {Array.from({ length: Math.round(worldSize) + 1 }).map((_, i) => (
             <line
               key={`v${i}`}
-              x1={i * SCALE}
+              x1={i * scale}
               y1={0}
-              x2={i * SCALE}
+              x2={i * scale}
               y2={SVG_SIZE}
               stroke="#e2e8f0"
               strokeWidth={1}
             />
           ))}
-          {Array.from({ length: WORLD_SIZE + 1 }).map((_, i) => (
+          {Array.from({ length: Math.round(worldSize) + 1 }).map((_, i) => (
             <line
               key={`h${i}`}
               x1={0}
-              y1={i * SCALE}
+              y1={i * scale}
               x2={SVG_SIZE}
-              y2={i * SCALE}
+              y2={i * scale}
               stroke="#e2e8f0"
               strokeWidth={1}
             />
@@ -129,10 +135,10 @@ export function UnitDrawPanel({ floor, units, onCreated }) {
 
           {units.map((u) => {
             if (!u.coordinates) return null;
-            const w = u.coordinates.width * SCALE;
-            const h = u.coordinates.depth * SCALE;
-            const x = SVG_SIZE / 2 + u.coordinates.x * SCALE - w / 2;
-            const y = SVG_SIZE / 2 + u.coordinates.z * SCALE - h / 2;
+            const w = u.coordinates.width * scale;
+            const h = u.coordinates.depth * scale;
+            const x = SVG_SIZE / 2 + u.coordinates.x * scale - w / 2;
+            const y = SVG_SIZE / 2 + u.coordinates.z * scale - h / 2;
             return (
               <g key={u.id}>
                 <rect
