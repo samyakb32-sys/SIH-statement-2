@@ -40,4 +40,9 @@ export const api = {
     form.append("model", file);
     return request("/upload", { method: "POST", body: form });
   },
+
+  listElements: (floorId) => request(`/elements?floorId=${floorId}`),
+  createElement: (data) => request("/elements", { method: "POST", body: JSON.stringify(data) }),
+  updateElement: (id, data) => request(`/elements/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteElement: (id) => request(`/elements/${id}`, { method: "DELETE" }),
 };

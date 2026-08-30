@@ -46,6 +46,19 @@ db.exec(`
     coordinates TEXT,
     createdAt TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  -- Non-ownable floor plan elements: doors, windows, tables, counters, open-space
+  -- markers. Kept separate from units, which carry a 3D-ULPIN and an owner —
+  -- these don't (a door isn't a parcel of property).
+  CREATE TABLE IF NOT EXISTS elements (
+    id TEXT PRIMARY KEY,
+    floorId TEXT NOT NULL REFERENCES floors(id) ON DELETE CASCADE,
+    buildingId TEXT NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,
+    type TEXT NOT NULL,
+    label TEXT,
+    coordinates TEXT NOT NULL,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
 export default db;

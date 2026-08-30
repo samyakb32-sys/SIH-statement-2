@@ -5,6 +5,7 @@ import fs from "node:fs";
 import buildingsRouter from "./routes/buildings.js";
 import floorsRouter from "./routes/floors.js";
 import unitsRouter from "./routes/units.js";
+import elementsRouter from "./routes/elements.js";
 import statsRouter from "./routes/stats.js";
 import uploadRouter, { uploadsDir } from "./routes/upload.js";
 import "./db/index.js";
@@ -23,6 +24,7 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.use("/api/buildings", buildingsRouter);
 app.use("/api/floors", floorsRouter);
 app.use("/api/units", unitsRouter);
+app.use("/api/elements", elementsRouter);
 app.use("/api/stats", statsRouter);
 app.use("/api/upload", uploadRouter);
 

@@ -13,14 +13,14 @@ const DEFAULT_COLOR = "#1e3a5f";
  * is at most one visible tinted box at a time — they're still present (and
  * still raycast-able for hover/click) so the floor list stays clickable.
  */
-export function FloorSlices({ floors, footprint = 12, selectedFloorId, onSelect }) {
+export function FloorSlices({ floors, footprint = 12, selectedFloorId, onSelect, dimAll = false }) {
   const [hoveredId, setHoveredId] = useState(null);
 
   return (
     <group>
       {floors.map((floor) => {
         const height = floor.maxHeight - floor.minHeight;
-        const isActive = floor.id === hoveredId || floor.id === selectedFloorId;
+        const isActive = !dimAll && (floor.id === hoveredId || floor.id === selectedFloorId);
         return (
           <mesh
             key={floor.id}
@@ -43,7 +43,7 @@ export function FloorSlices({ floors, footprint = 12, selectedFloorId, onSelect 
             <meshStandardMaterial
               color={isActive ? HIGHLIGHT : DEFAULT_COLOR}
               transparent
-              opacity={isActive ? 0.45 : 0}
+              opacity={isActive ? 0.45 : dimAll ? 0.1 : 0}
               depthWrite={false}
             />
           </mesh>

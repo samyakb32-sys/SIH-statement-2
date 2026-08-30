@@ -2,14 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Viewer3D } from "../three/Viewer3D.jsx";
 import { UlpinBadge } from "../components/UlpinBadge.jsx";
-import { UnitDrawPanel } from "../components/UnitDrawPanel.jsx";
+import { FloorEditor } from "../components/FloorEditor.jsx";
 import { api } from "../lib/api.js";
 
 export default function BuildingDetail() {
   const { id } = useParams();
   const [building, setBuilding] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState(null);
-  const [showTop, setShowTop] = useState(false);
+  const [mode, setMode] = useState("3d"); // '3d' | 'edit' | 'walk'
   const [loading, setLoading] = useState(true);
   const [footprint, setFootprint] = useState(10);
 
@@ -28,6 +28,7 @@ export default function BuildingDetail() {
   if (!building) return <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 text-slate-500">Building not found.</div>;
 
   const unitsOnFloor = building.units.filter((u) => u.floorId === selectedFloor?.id);
+  const elementsOnFloor = (building.elements || []).filter((e) => e.floorId === selectedFloor?.id);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -62,42 +63,60 @@ export default function BuildingDetail() {
           </ul>
         </div>
 
-        {/* 3D viewer */}
+        {/* 3D viewer / editor */}
         <div className="lg:col-span-2 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="font-semibold text-navy-900">3D Viewer</h2>
-            <button
-              onClick={() => setShowTop((v) => !v)}
-              className="text-sm font-medium bg-navy-900 hover:bg-navy-800 text-white px-3 py-1.5 rounded-md"
-            >
-              {showTop ? "Back to 3D View" : "Top-Down View (Tag Units)"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setMode(mode === "edit" ? "3d" : "edit")}
+                className={`text-sm font-medium px-3 py-1.5 rounded-md ${
+                  mode === "edit" ? "bg-amber-500 text-navy-950" : "bg-navy-900 hover:bg-navy-800 text-white"
+                }`}
+              >
+                {mode === "edit" ? "Back to 3D View" : "Top-Down Editor"}
+              </button>
+              <button
+                onClick={() => setMode(mode === "walk" ? "3d" : "walk")}
+                disabled={!selectedFloor}
+                className={`text-sm font-medium px-3 py-1.5 rounded-md disabled:opacity-40 ${
+                  mode === "walk" ? "bg-amber-500 text-navy-950" : "bg-navy-900 hover:bg-navy-800 text-white"
+                }`}
+              >
+                {mode === "walk" ? "Exit Walk Mode" : "Walk Mode"}
+              </button>
+            </div>
           </div>
 
-          {!showTop ? (
+          {mode === "edit" ? (
+            selectedFloor && (
+              <FloorEditor
+                floor={selectedFloor}
+                units={unitsOnFloor}
+                elements={elementsOnFloor}
+                onChanged={load}
+                worldSize={footprint}
+              />
+            )
+          ) : (
             <div className="h-[480px]">
               <Viewer3D
                 modelUrl={building.modelUrl}
                 floors={building.floors}
                 units={building.units}
+                elements={building.elements || []}
                 selectedFloorId={selectedFloor?.id}
                 onSelectFloor={setSelectedFloor}
                 fallbackHeight={building.heightMeters}
+                walkMode={mode === "walk"}
+                focusFloorId={selectedFloor?.id}
+                onExitWalk={() => setMode("3d")}
                 onBounds={(box) => {
                   const fp = Math.max(box.max.x - box.min.x, box.max.z - box.min.z);
                   if (fp && Number.isFinite(fp)) setFootprint(fp);
                 }}
               />
             </div>
-          ) : (
-            selectedFloor && (
-              <UnitDrawPanel
-                floor={selectedFloor}
-                units={unitsOnFloor}
-                onCreated={load}
-                worldSize={footprint}
-              />
-            )
           )}
         </div>
       </div>
@@ -121,7 +140,7 @@ export default function BuildingDetail() {
               {unitsOnFloor.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-4 py-6 text-center text-slate-400">
-                    No units tagged on this floor yet. Switch to top-down view to draw one.
+                    No units tagged on this floor yet. Switch to the top-down editor to draw one.
                   </td>
                 </tr>
               )}

@@ -23,7 +23,12 @@ router.get("/:id", (req, res) => {
     .all(building.id)
     .map((u) => ({ ...u, coordinates: u.coordinates ? JSON.parse(u.coordinates) : null }));
 
-  res.json({ ...building, floors, units });
+  const elements = db
+    .prepare("SELECT * FROM elements WHERE buildingId = ? ORDER BY createdAt ASC")
+    .all(building.id)
+    .map((e) => ({ ...e, coordinates: JSON.parse(e.coordinates) }));
+
+  res.json({ ...building, floors, units, elements });
 });
 
 router.post("/", (req, res) => {
