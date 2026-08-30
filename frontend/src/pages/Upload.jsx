@@ -163,7 +163,7 @@ export default function Upload() {
           </div>
         </div>
 
-        <div className="h-[520px] lg:h-auto">
+        <div className="h-[520px]">
           <Viewer3D modelUrl={modelUrl} fallbackHeight={16} onBounds={setBounds} />
           <p className="text-xs text-slate-500 mt-2">
             {modelUrl
