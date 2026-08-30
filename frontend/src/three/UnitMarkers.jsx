@@ -1,3 +1,5 @@
+import { Edges } from "@react-three/drei";
+
 /** Renders each tagged unit as a small colored box within its floor slab, for highlighting a search result. */
 export function UnitMarkers({ units, floorsById, highlightedUnitId }) {
   return (
@@ -17,6 +19,10 @@ export function UnitMarkers({ units, floorsById, highlightedUnitId }) {
               transparent
               opacity={isHighlighted ? 0.85 : 0.35}
             />
+            {/* A flat-colored transparent box on its own is hard to make out against
+                the floor slab, especially a small room in a wide-angle view — a
+                visible edge outline keeps each unit's boundary legible at any scale. */}
+            <Edges color={isHighlighted ? "#fff7ed" : "#0f1f38"} linewidth={1.5} />
           </mesh>
         );
       })}

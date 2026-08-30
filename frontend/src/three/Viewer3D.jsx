@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Grid, Environment } from "@react-three/drei";
+import { OrbitControls, Grid, Environment, Bounds } from "@react-three/drei";
 import { BuildingModel, PlaceholderBuilding } from "./BuildingModel.jsx";
 import { FloorSlices } from "./FloorSlices.jsx";
 import { UnitMarkers } from "./UnitMarkers.jsx";
@@ -51,32 +51,57 @@ export function Viewer3D({
         <ambientLight intensity={0.6} />
         <directionalLight position={[10, 20, 10]} intensity={1.1} castShadow />
         <Suspense fallback={null}>
-          {!walkMode &&
-            (modelUrl ? (
-              <BuildingModel url={modelUrl} onBounds={handleBounds} />
-            ) : (
-              <PlaceholderBuilding heightMeters={fallbackHeight} onBounds={handleBounds} />
-            ))}
-          {visibleFloors.length > 0 && (
-            <FloorSlices
-              floors={visibleFloors}
-              footprint={footprint * 1.02}
-              selectedFloorId={selectedFloorId}
-              onSelect={onSelectFloor}
-              dimAll={walkMode}
-            />
+          {walkMode ? (
+            <>
+              {visibleFloors.length > 0 && (
+                <FloorSlices
+                  floors={visibleFloors}
+                  footprint={footprint * 1.02}
+                  selectedFloorId={selectedFloorId}
+                  onSelect={onSelectFloor}
+                  dimAll
+                />
+              )}
+              {showUnits && visibleUnits.length > 0 && (
+                <UnitMarkers units={visibleUnits} floorsById={floorsById} highlightedUnitId={highlightedUnitId} />
+              )}
+              {visibleElements.length > 0 && <ElementMarkers elements={visibleElements} floorsById={floorsById} />}
+            </>
+          ) : (
+            // Bounds auto-frames the camera around whatever it wraps, refitting
+            // whenever that content changes (observe). Without it, a small
+            // building (or a small tagged unit inside it) can end up as a tiny
+            // speck at a fixed camera distance meant for a much bigger scene.
+            <Bounds fit clip observe margin={1.35}>
+              {modelUrl ? (
+                <BuildingModel url={modelUrl} onBounds={handleBounds} />
+              ) : (
+                <PlaceholderBuilding heightMeters={fallbackHeight} onBounds={handleBounds} />
+              )}
+              {visibleFloors.length > 0 && (
+                <FloorSlices
+                  floors={visibleFloors}
+                  footprint={footprint * 1.02}
+                  selectedFloorId={selectedFloorId}
+                  onSelect={onSelectFloor}
+                />
+              )}
+              {showUnits && visibleUnits.length > 0 && (
+                <UnitMarkers units={visibleUnits} floorsById={floorsById} highlightedUnitId={highlightedUnitId} />
+              )}
+              {visibleElements.length > 0 && <ElementMarkers elements={visibleElements} floorsById={floorsById} />}
+            </Bounds>
           )}
-          {showUnits && visibleUnits.length > 0 && (
-            <UnitMarkers units={visibleUnits} floorsById={floorsById} highlightedUnitId={highlightedUnitId} />
-          )}
-          {visibleElements.length > 0 && <ElementMarkers elements={visibleElements} floorsById={floorsById} />}
           {!walkMode && <Environment preset="city" />}
         </Suspense>
         <Grid args={[60, 60]} position={[0, 0, 0]} cellColor="#28527d" sectionColor="#1e3a5f" fadeDistance={40} />
         {walkMode ? (
           <WalkControls eyeHeight={eyeHeight} />
         ) : (
-          <OrbitControls makeDefault minDistance={4} maxDistance={80} target={[0, fallbackHeight / 3, 0]} />
+          // No fixed `target` here: Bounds already points the camera at the
+          // content it fit, and a hardcoded target would fight that on every
+          // render (OrbitControls re-applies a `target` prop continuously).
+          <OrbitControls makeDefault minDistance={1} maxDistance={200} />
         )}
       </Canvas>
 

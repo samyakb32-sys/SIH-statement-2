@@ -1,3 +1,5 @@
+import { Edges } from "@react-three/drei";
+
 const ELEMENT_COLOR = {
   door: "#92400e",
   window: "#38bdf8",
@@ -38,6 +40,7 @@ export function ElementMarkers({ elements, floorsById }) {
               transparent={el.type === "open_space"}
               opacity={el.type === "open_space" ? 0.15 : 1}
             />
+            <Edges color="#0f1f38" linewidth={1.5} />
           </mesh>
         );
       })}
