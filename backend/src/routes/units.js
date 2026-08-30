@@ -72,11 +72,14 @@ router.patch("/:id", (req, res) => {
   if (!unit) return res.status(404).json({ error: "Unit not found" });
 
   const { ownerName, area, unitType, coordinates } = req.body;
+  // `area` uses `!== undefined`, not `??`: the editor sends an explicit
+  // `null` to clear the area field, and `??` would treat that null as
+  // "not provided" and silently keep the old value instead of clearing it.
   db.prepare(
     `UPDATE units SET ownerName = ?, area = ?, unitType = ?, coordinates = ? WHERE id = ?`
   ).run(
     ownerName ?? unit.ownerName,
-    area ?? unit.area,
+    area !== undefined ? area : unit.area,
     unitType ?? unit.unitType,
     coordinates ? JSON.stringify(coordinates) : unit.coordinates,
     unit.id

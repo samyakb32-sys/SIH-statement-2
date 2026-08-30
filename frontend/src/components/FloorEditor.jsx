@@ -103,12 +103,21 @@ export function FloorEditor({ floor, units, elements, worldSize = 12, onChanged 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.id]);
 
+  // Capturing the pointer on the SVG itself keeps move/up events flowing to
+  // it even if the cursor is dragged outside the SVG's bounds mid-drag —
+  // without this, a fast drag past the edge stops delivering pointermove/up
+  // and the shape is left stuck mid-drag until an unrelated click "unsticks" it.
+  function capturePointer(e) {
+    svgRef.current?.setPointerCapture(e.pointerId);
+  }
+
   function handleBackgroundDown(e) {
     e.stopPropagation();
     if (tool === "select") {
       setSelected(null);
       return;
     }
+    capturePointer(e);
     const p = getPoint(e);
     setSelected(null);
     setDrag({ mode: "drawing", startX: p.x, startY: p.y, rect: { x: p.x, y: p.y, width: 0, height: 0 } });
@@ -116,6 +125,7 @@ export function FloorEditor({ floor, units, elements, worldSize = 12, onChanged 
 
   function handleShapeDown(e, item) {
     e.stopPropagation();
+    capturePointer(e);
     setTool("select");
     setSelected({ kind: item.kind, id: item.id });
     const p = getPoint(e);
@@ -125,6 +135,7 @@ export function FloorEditor({ floor, units, elements, worldSize = 12, onChanged 
 
   function handleHandleDown(e, corner) {
     e.stopPropagation();
+    capturePointer(e);
     const p = getPoint(e);
     const rect = toSvgRect(selectedItem.coordinates);
     setDrag({ mode: "resizing", corner, startX: p.x, startY: p.y, originRect: rect, rect });

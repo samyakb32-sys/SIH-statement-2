@@ -13,7 +13,11 @@ export function WalkControls({ eyeHeight = 1.6 }) {
   const keys = useRef({});
 
   useEffect(() => {
-    camera.position.y = eyeHeight;
+    // Reset to the building's center, not wherever the orbit camera was
+    // left — otherwise walk mode can start tens of metres outside the
+    // building instead of inside the floor you meant to look around.
+    camera.position.set(0, eyeHeight, 0);
+    camera.rotation.set(0, 0, 0);
     const onDown = (e) => (keys.current[e.code] = true);
     const onUp = (e) => (keys.current[e.code] = false);
     window.addEventListener("keydown", onDown);
