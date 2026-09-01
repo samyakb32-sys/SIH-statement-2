@@ -5,6 +5,7 @@ import { api } from "../lib/api.js";
 
 const ACCEPTED_EXT = [".glb", ".gltf", ".obj"];
 const VIDEO_EXT = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v"];
+const IMAGE_EXT = [".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp", ".bmp", ".tiff"];
 
 export default function Upload() {
   const navigate = useNavigate();
@@ -27,6 +28,12 @@ export default function Upload() {
     if (VIDEO_EXT.includes(ext)) {
       setError(
         `This app doesn't convert video to 3D — that step happens in the KIRI Engine app on your phone. Scan the building there, export the result as .glb, and upload that file here instead.`
+      );
+      return;
+    }
+    if (IMAGE_EXT.includes(ext)) {
+      setError(
+        `This app doesn't convert photos to 3D either — even a single image can't be turned into a model. Use the KIRI Engine app to scan the building (video or a multi-angle photo set), export the result as .glb, and upload that file here instead.`
       );
       return;
     }
@@ -119,9 +126,9 @@ export default function Upload() {
           </div>
 
           <p className="text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded-md px-3 py-2">
-            Have a phone video of the building instead of a 3D file? This app doesn't convert video to 3D
-            itself — scan the building with the <strong>KIRI Engine</strong> app, export the result as{" "}
-            <strong>.glb</strong>, then upload that file here.
+            Have a phone video or photos of the building instead of a 3D file? This app doesn't convert
+            video or images to 3D itself — scan the building with the <strong>KIRI Engine</strong> app,
+            export the result as <strong>.glb</strong>, then upload that file here.
           </p>
 
           <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
